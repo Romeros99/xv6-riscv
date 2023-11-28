@@ -89,3 +89,49 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_getppid(void)
+{
+    return myproc()->parent->pid;
+}
+
+uint64
+sys_getancestor(void)
+{
+    int n, pid_ancestor;
+    struct proc *p = myproc();
+    argint(0, &n);
+    if (n < 0)
+        return -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (p->parent == 0)
+            return -1; // No hay suficientes ancestros
+        p = p->parent;
+    }
+    pid_ancestor = p->pid;
+    return pid_ancestor;
+}
+/*uint64
+sys_getancestor(void)
+{
+  int i;
+  argint(0, &i);
+  struct proc *ancestor = myproc();
+  int anc_pid = myproc()->pid;
+
+  for (int j = 0; j < i; j++){
+    if (ancestor->parent){
+      anc_pid = ancestor->parent->pid;
+      ancestor = ancestor->parent;
+    }
+    else{
+      anc_pid = -1;
+      break;
+    }
+  };
+
+  return anc_pid;
+}*/
