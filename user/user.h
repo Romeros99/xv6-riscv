@@ -22,6 +22,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int chmod(char *filename, int nuevo_permiso);
 
 // ulib.c
 int stat(const char*, struct stat*);

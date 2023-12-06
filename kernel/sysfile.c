@@ -271,6 +271,7 @@ create(char *path, short type, short major, short minor)
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
+  ip->permisos = 3;
   iupdate(ip);
 
   if(type == T_DIR){  // Create . and .. entries.
@@ -328,6 +329,16 @@ sys_open(void)
       return -1;
     }
     ilock(ip);
+
+    if (((omode & O_RDONLY) && !(ip->permisos == 1)) ||
+        ((omode & O_WRONLY) && !(ip->permisos == 2)) || 
+        ((omode & O_RDWR) && !(ip->permisos == 3)) || 
+        (ip->permisos == 0)){
+      iunlockput(ip);
+      end_op();
+      return -1; 
+    }
+
     if(ip->type == T_DIR && omode != O_RDONLY){
       iunlockput(ip);
       end_op();
@@ -368,6 +379,23 @@ sys_open(void)
   end_op();
 
   return fd;
+}
+uint64
+sys_chmod(void){
+  char path[MAXPATH];
+  argstr(0, path, MAXPATH);
+
+  int permiso;
+  argint(1, &permiso);
+
+  struct inode *ip;
+  ip = namei(path);
+  ilock(ip);
+
+  ip->permisos = permiso;
+  iunlockput(ip);
+
+  return 0;
 }
 
 uint64
